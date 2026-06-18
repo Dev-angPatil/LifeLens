@@ -351,6 +351,16 @@ div.element-container:has(div.stNumberInput) {
     height: auto !important;
     min-height: 120px !important;
 }
+
+/* Container styling for forms to replace broken raw HTML divs */
+.st-key-daily_entry_form, .st-key-settings_form {
+    border: 4px solid #000000 !important;
+    background-color: #FFFFFF !important;
+    padding: 2rem !important;
+    box-shadow: 8px 8px 0px 0px #000000 !important;
+    border-radius: 8px !important;
+    margin-bottom: 2rem !important;
+}
 """
 
 def inject_theme_styles():

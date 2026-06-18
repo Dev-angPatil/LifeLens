@@ -196,42 +196,38 @@ if page == "🏠 Dashboard":
 elif page == "📝 Daily Entry":
     st.markdown("<h2>📝 LOG HABIT ENTRY</h2>", unsafe_allow_html=True)
     
-    # Form layout wrapper
-    st.markdown('<div style="border: 4px solid #000; background:#FFF; padding:2rem; box-shadow:8px 8px 0px #000; border-radius:8px; margin-bottom:2rem;">', unsafe_allow_html=True)
+    with st.container(key="daily_entry_form"):
+        # Setup inputs
+        entry_date = st.date_input("Date of Entry", datetime.date.today())
+        date_str = entry_date.strftime("%Y-%m-%d")
         
-    # Setup inputs
-    entry_date = st.date_input("Date of Entry", datetime.date.today())
-    date_str = entry_date.strftime("%Y-%m-%d")
-    
-    # Check if data already exists for this date
-    existing_entry = db.get_entry_by_date(date_str)
-    if existing_entry:
-        st.warning(f"Note: An entry for **{date_str}** already exists. Submitting this form will overwrite it!")
-        
-    c1, c2 = st.columns(2)
-    with c1:
-        study_h = st.slider("Study Hours (focused work)", 0.0, 16.0, float(existing_entry["study_hours"]) if existing_entry else 4.0, step=0.5)
-        sleep_h = st.slider("Sleep Hours (rest duration)", 0.0, 12.0, float(existing_entry["sleep_hours"]) if existing_entry else 7.5, step=0.5)
-        exercise_m = st.slider("Exercise Minutes (movement)", 0.0, 180.0, float(existing_entry["exercise_minutes"]) if existing_entry else 30.0, step=5.0)
-    with c2:
-        screen_h = st.slider("Screen Time (entertainment/scroll)", 0.0, 16.0, float(existing_entry["screen_time"]) if existing_entry else 5.0, step=0.5)
-        mood_s = st.slider("Mood Score (emotional state)", 1, 10, int(existing_entry["mood"]) if existing_entry else 7, step=1)
-        water_i = st.slider("Water Intake (liters)", 0.0, 8.0, float(existing_entry["water_intake"]) if existing_entry else 2.5, step=0.1)
-        
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    if st.button("Save Daily Entry"):
-        score = db.insert_entry(date_str, study_h, sleep_h, exercise_m, screen_h, mood_s, water_i)
-        
-        # Display custom notification box
-        st.markdown(f"""
-        <div style="border:3px solid #000; background:#BFFF80; padding:1rem; box-shadow:4px 4px 0px #000; font-family:'Lexend Mega',sans-serif; font-weight:900; margin-top:1rem;">
-            ✅ DAILY ENTRY SAVED SUCCESSFULLY FOR {date_str}!<br>
-            📊 CALCULATED PRODUCTIVITY SCORE: {score:.1f}/100.
-        </div>
-        """, unsafe_allow_html=True)
+        # Check if data already exists for this date
+        existing_entry = db.get_entry_by_date(date_str)
+        if existing_entry:
+            st.warning(f"Note: An entry for **{date_str}** already exists. Submitting this form will overwrite it!")
             
-    st.markdown('</div>', unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            study_h = st.slider("Study Hours (focused work)", 0.0, 16.0, float(existing_entry["study_hours"]) if existing_entry else 4.0, step=0.5)
+            sleep_h = st.slider("Sleep Hours (rest duration)", 0.0, 12.0, float(existing_entry["sleep_hours"]) if existing_entry else 7.5, step=0.5)
+            exercise_m = st.slider("Exercise Minutes (movement)", 0.0, 180.0, float(existing_entry["exercise_minutes"]) if existing_entry else 30.0, step=5.0)
+        with c2:
+            screen_h = st.slider("Screen Time (entertainment/scroll)", 0.0, 16.0, float(existing_entry["screen_time"]) if existing_entry else 5.0, step=0.5)
+            mood_s = st.slider("Mood Score (emotional state)", 1, 10, int(existing_entry["mood"]) if existing_entry else 7, step=1)
+            water_i = st.slider("Water Intake (liters)", 0.0, 8.0, float(existing_entry["water_intake"]) if existing_entry else 2.5, step=0.1)
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        if st.button("Save Daily Entry"):
+            score = db.insert_entry(date_str, study_h, sleep_h, exercise_m, screen_h, mood_s, water_i)
+            
+            # Display custom notification box
+            st.markdown(f"""
+            <div style="border:3px solid #000; background:#BFFF80; padding:1rem; box-shadow:4px 4px 0px #000; font-family:'Lexend Mega',sans-serif; font-weight:900; margin-top:1rem; color:#000000;">
+                ✅ DAILY ENTRY SAVED SUCCESSFULLY FOR {date_str}!<br>
+                📊 CALCULATED PRODUCTIVITY SCORE: {score:.1f}/100.
+            </div>
+            """, unsafe_allow_html=True)
 
 elif page == "📊 Analytics":
     st.markdown("<h2>📊 INTERACTIVE ANALYTICS</h2>", unsafe_allow_html=True)
@@ -352,30 +348,27 @@ elif page == "💡 Recommendations":
 elif page == "⚙️ Settings":
     st.markdown("<h2>⚙️ SYSTEM SETTINGS</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="border:4px solid #000; background:#FFF; padding:2rem; box-shadow:8px 8px 0px #000; border-radius:8px;">', unsafe_allow_html=True)
+    with st.container(key="settings_form"):
+        st.subheader("Database Management")
+        st.write("Control the SQLite datastore cache.")
         
-    st.subheader("Database Management")
-    st.write("Control the SQLite datastore cache.")
-    
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("🚨 CLEAR DATABASE"):
-            db.get_db_connection().execute("DELETE FROM daily_habits")
-            db.get_db_connection().commit()
-            st.success("Database cleared successfully! The dashboard is now empty.")
-            st.rerun()
-            
-    with c2:
-        if st.button("🔥 RE-POPULATE MOCK DATA"):
-            db.get_db_connection().execute("DELETE FROM daily_habits")
-            db.get_db_connection().commit()
-            db.init_db()
-            st.success("Database populated with 14 days of mock data successfully!")
-            st.rerun()
-            
-    st.markdown("<br><hr><br>", unsafe_allow_html=True)
-    
-    st.subheader("Raw Database Entries")
-    st.dataframe(df, width="stretch")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("🚨 CLEAR DATABASE"):
+                db.get_db_connection().execute("DELETE FROM daily_habits")
+                db.get_db_connection().commit()
+                st.success("Database cleared successfully! The dashboard is now empty.")
+                st.rerun()
+                
+        with c2:
+            if st.button("🔥 RE-POPULATE MOCK DATA"):
+                db.get_db_connection().execute("DELETE FROM daily_habits")
+                db.get_db_connection().commit()
+                db.init_db()
+                st.success("Database populated with 14 days of mock data successfully!")
+                st.rerun()
+                
+        st.markdown("<br><hr><br>", unsafe_allow_html=True)
+        
+        st.subheader("Raw Database Entries")
+        st.dataframe(df, width="stretch")
